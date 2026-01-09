@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Chat</title>
+    <style>
+        @font-face {
+            font-family: 'Anotica';
+            src: url('path/to/Anotica-Regular.woff2') format('woff2'),
+                 url('path/to/Anotica-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #ffffff;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .brand-name {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            font-family: 'Anotica', sans-serif;
+            font-size: 48px;
+            color: #ffffff;
+        }
+
+        .linkedin-logo, .github-logo {
+            position: fixed;
+            top: 20px;
+            z-index: 1000;
+            height: 35px;
+            width: auto;
+            transition: transform 0.3s;
+        }
+
+        .linkedin-logo:hover, .github-logo:hover {
+            transform: scale(1.1);
+        }
+
+        .linkedin-logo {
+            right: 70px;
+        }
+
+        .github-logo {
+            right: 20px;
+        }
+
+        .chat-container {
+            flex: 1;
+            width: 100%;
+            max-width: 900px;
+            margin: 90px auto 0;
+            display: flex;
+            flex-direction: column;
+            padding: 0 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-input-container {
+            background: #1e3c72;
+            border-radius: 14px;
+            padding: 18px;
+            margin: 20px 0;
+            position: sticky;
+            bottom: 0;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            background: #2a5298;
+            border: 1px solid #4a69bd;
+            border-radius: 14px;
+            padding: 18px 24px;
+            color: #ffffff;
+            font-size: 18px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #6a89cc;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            padding: 18px 30px;
+            border-radius: 14px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .send-button:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 20px 28px;
+            border-radius: 24px;
+            line-height: 1.5;
+            font-size: 18px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .user-message {
+            background: #4a69bd;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-message {
+            background: #2a5298;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #4a69bd;
+        }
+
+        .loading {
+            padding: 20px 28px;
+        }
+
+        .loading-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            height: 20px;
+        }
+
+        .loading-dots div {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #ffffff;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dots div:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dots div:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-6px);
+            }
+        }
+
+        ::placeholder {
+            color: #99aab5;
+            font-size: 18px;
+        }
+
+        .disclaimer {
+            font-size: 14px;
+            color: #99aab5;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Windows 11-like scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin: 2px 0;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        ::-webkit-scrollbar-thumb:active {
+            background: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="brand-name">ADINN</div>
+    <a href="https://www.linkedin.com/in/mihai-grigore-ubi/" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn Logo" class="linkedin-logo">
+    </a>
+    <a href="https://github.com/mihaaaailai" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="GitHub Logo" class="github-logo">
+    </a>
+
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-container">
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="Ask the chat">
+                <button class="send-button" onclick="fetchChatResponse()">Send</button>
+            </div>
+            <div class="disclaimer">AI can make mistakes.</div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchChatResponse() {
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value.trim();
+
+            if (!message) return;
+
+            displayMessage(message, 'user-message');
+            userInput.value = '';
+
+            const chatMessages = document.getElementById('chatMessages');
+            const loadingElement = document.createElement('div');
+            loadingElement.className = 'message ai-message loading';
+            loadingElement.innerHTML = `
+                <div class="loading-dots">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            `;
+            chatMessages.appendChild(loadingElement);
+
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": "Bearer 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",
+                        "HTTP-Referer": "<YOUR_SITE_URL>",
+                        "X-Title": "<YOUR_SITE_NAME>",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "model": "mistralai/mistral-nemo:free",
+                        "messages": [{ "role": "user", "content": message }]
+                    })
+                });
+
+                const data = await response.json();
+                const aiResponse = data.choices[0].message.content;
+
+                chatMessages.removeChild(loadingElement);
+                displayMessage(aiResponse, 'ai-message');
+
+            } catch (error) {
+                console.error('Error:', error);
+                chatMessages.removeChild(loadingElement);
+                displayMessage('Sorry, there was an error processing your request.', 'ai-message');
+            }
+        }
+
+        function displayMessage(text, className) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${className}`;
+            messageElement.textContent = text;
+            chatMessages.appendChild(messageElement);
+
+            chatMessages.scrollTo({
+                top: chatMessages.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                fetchChatResponse();
+            }
+        });
+    </script>
+</body>
+</html>
